@@ -19,3 +19,6 @@ class TestHTMLNode(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             node = HTMLNode("p", "This is a paragraph")
             node.to_html()
+
+if __name__ == "__main__":
+    unittest.main()
