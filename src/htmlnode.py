@@ -17,6 +17,16 @@ class HTMLNode:
     
     def __repr__(self):
         return f"HTMLNode(Tag = {self.tag}, Value = {self.value}, Children = {self.children})"
+    
+    def __eq__(self, other):
+        output = True
+        if self.tag:
+            output = self.tag == other.tag
+        if self.value:
+            output = self.value == other.value
+        if self.children:
+            output = self.children == other.children
+        return output
 
 class ImageNode(HTMLNode):
     def __init__(self, src, alt):
@@ -24,6 +34,12 @@ class ImageNode(HTMLNode):
             raise ValueError("Images require a source and alt text")
         self.tag = "img"
         self.props = {"src":src, "alt":html_escape(alt, quote=True)}
+
+    def __repr__(self):
+        return f"ImageNode(src = {self.props["src"]}, alt = {self.props["alt"]})"
+    
+    def __eq__(self, other):
+        return self.props == other.props
 
 
     def to_html(self):
@@ -42,6 +58,30 @@ class LinkNode(HTMLNode):
 
     def to_html(self):
         return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
+    
+    def __repr__(self):
+        if len(self.props) == 2:
+            return f"LinkNode(url = {self.props["href"]}, Link Text = {self.value}, Title = {self.props["title"]})"
+        return f"LinkNode(url = {self.props["href"]}, Link Text = {self.value})"
+    
+    def __eq__(self, other):
+        output = self.value == other.value and self.props["href"] == other.props["href"]
+        if len(self.props) == 2:
+            output = self.props["title"] == other.props["title"]
+        return output
+
+class BaseNode(HTMLNode):
+    def __init__(self, value, node_type=TextType.NORMAL):
+        if not value:
+            raise ValueError("Leaf node must have a value")
+        self.value = value
+        self.text_type = node_type
+
+    def __repr__(self):
+        return f"BaseNode(Value = '{self.value}', {self.text_type})"
+    
+    def __eq__(self, other):
+        return self.value == other.value and self.text_type == other.text_type
 
 class LeafNode(HTMLNode):
     def __init__(self, value, node_type=TextType.NORMAL):
@@ -57,6 +97,12 @@ class LeafNode(HTMLNode):
         if self.tag:
             return f"<{self.tag}>{self.value}</{self.tag}>"
         return self.value
+    
+    def __repr__(self):
+        return f"LeafNode(Value = '{self.value}', {self.text_type})"
+    
+    def __eq__(self, other):
+        return self.value == other.value and self.text_type == other.text_type
     
 class ParentNode(HTMLNode):
     def __init__(self, tag, children, props=None):
